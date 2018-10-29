@@ -160,8 +160,8 @@ namespace HSRTicketVendorSystem.Service {
         + PaymentAPIResponse verify(String paymentToken)
     }
 
-    IPaymentAPI <|- CreditCardPaymentAPI
-    IPaymentAPI <|- CasherPaymentAPI
+    IPaymentAPI <|-up- CreditCardPaymentAPI
+    IPaymentAPI <|-up- CasherPaymentAPI
 
     class ConsoleVendingUI {
         - VendingRequest _request
@@ -179,7 +179,8 @@ namespace HSRTicketVendorSystem.Service {
         - List<Train> getAvailableTrain()
     }
 
-    HSRTicketVendorSystem.Repository.IGenericRepository <-- ConsoleVendingUI
+    HSRTicketVendorSystem.Repository.IGenericRepository <-down- ConsoleVendingUI
+    ITrainTicketFactory <-up- ConsoleVendingUI
 
     class VendingService {
         - IPaymentService _paymentService
@@ -219,8 +220,8 @@ namespace HSRTicketVendorSystem.Service {
 
     IVendingUI <|- ConsoleVendingUI
     IVendingService <|- VendingService
-    ITrainTicketFactory <|- PurchaseTrainTicketFactory
-    ITrainTicketFactory <|- PickUpTrainTicketFactory
+    ITrainTicketFactory <|-up- PurchaseTrainTicketFactory
+    ITrainTicketFactory <|-up- PickUpTrainTicketFactory
     IPaymentService <|- CreditCardPaymentService
     IPaymentService <|- CashPaymentService
 }
