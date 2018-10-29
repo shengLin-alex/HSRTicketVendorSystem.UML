@@ -1,0 +1,228 @@
+@startuml HSRTicketVendorSystem
+
+namespace HSRTicketVendorSystem.Model {
+
+    enum TrainStationEnum {
+        + Nangang
+        + Taipei
+        + Banqiao
+        + Taoyuan
+        + Hsinchu
+        + Miaoli
+        + Changhua
+        + Yunlin
+        + Chiayi
+        + Tainan
+        + Zuoying
+    }
+
+    enum TicketTypeEnum {
+        + Adult
+        + Child
+        + Elder
+    }
+
+    enum ReservationTypeEnum {
+        + Reserved
+        + NonReserved
+    }
+
+    enum PaymentTypeEnum {
+        + Cash
+        + CreditCard
+    }
+
+    enum VendingTypeEnum {
+        + Purchase
+        + PickUp
+    }
+
+    class Payment {
+        + PaymentTypeEnum PaymentTypeEnum { get; set; }
+        + String PaymentToken { get; set; }
+    }
+
+    class TrainTicket {
+        + String TicketId { get; set; }
+        + TrainStationEnum StartPoint { get; set; }
+        + TrainStationEnum Destination { get; set; }
+        + String TrainNumber { get; set; }
+        + PaymentTypeEnum PaymentType { get; set; }
+        + TicketTypeEnum TicketType { get; set; }
+        + ReservationTypeEnum ReservationType { get; set; }
+        + DateTime ArrivalTime { get; set; }
+        + DateTime DepartureTime { get; set; }
+    }
+
+    class TrainSeatReservation {
+        + String SetId { get; set; }
+        + bool IsServed { get; set; }
+    }
+
+    class TrainNode {
+        + TrainStationEnum TrainStation { get; set; }
+        + DateTime ArrivalTime { get; set; }
+        + DateTime DepartureTime { get; set; }
+    }
+
+    class Train {
+        + String TrainNumber { get; set; }
+        + List<TrainNode> Route { get; set; }
+        + List<TrainSeatReservation> { get; set; }
+    }
+}
+
+namespace HSRTicketVendorSystem.Repository {
+    interface IGenericRepository<TModel> {
+        + TModel Get(Func<TModel, bool> predicate)
+        + IEnumerable<TModel> GetAll()
+        + bool Update(TModel target)
+        + bool Delete(TModel target)
+    }
+
+    class TrainRepository {
+        + Train Get(Func<Train, bool> predicate)
+        + IEnumerable<Train> GetAll()
+        + bool Update(Train target)
+        + bool Delete(Train target)
+    }
+
+    IGenericRepository <|- TrainRepository
+}
+
+namespace HSRTicketVendorSystem.Service.Dto {
+    class VendingRepuest {
+        + VendingTypeEnum VendingType { get; set; }
+        + TrainStationEnum StartPoint { get; set; }
+        + TrainStationEnum Destination { get; set; }
+        + PaymentTypeEnum PaymentType { get; set; }
+        + TicketTypeEnum TicketType { get; set; }
+        + ReservationTypeEnum ReservationType { get; set; }
+        + DateTime ArrivalTime { get; set; }
+        + DateTime DepartureTime { get; set; }
+    }
+
+    class PaymentResponse {
+        + bool IsSuccess { get; set; }
+        + PaymentAPIResponse APIResponse { get; set; }
+    }
+
+    class PaymentAPIResponse {
+        + String Message { get; set; }
+        + int Code { get; set; }
+        + int Change { get; set; }
+    }
+}
+
+namespace HSRTicketVendorSystem.Service {
+    interface IVendingUI {
+        + void PrintMainMenu()
+        + void PrintRequestMenu()
+        + void PrintPickUpTicketMenu()
+        + void PrintAvailableTrains()
+        + void PrintPaymentMenu()
+        + void PrintProcessing()
+        + void PrintReceiptView()
+        + VendingRequest BuildRequest()
+    }
+
+    interface IVendingService {
+        + void Serve()
+    }
+
+    interface ITrainTicketFactory {
+        + TrainTicket GenerateTicket(VendingRepuest request)
+    }
+
+    interface IPaymentService {
+        + PaymentResponse Pay(Payment payment)
+    }
+
+    interface IPaymentAPI {
+        + PaymentAPIResponse verify(String paymentToken)
+    }
+
+    class CreditCardPaymentAPI {
+        + PaymentAPIResponse verify(String paymentToken)
+    }
+
+    class CasherPaymentAPI {
+        + PaymentAPIResponse verify(String paymentToken)
+    }
+
+    IPaymentAPI <|- CreditCardPaymentAPI
+    IPaymentAPI <|- CasherPaymentAPI
+
+    class ConsoleVendingUI {
+        - VendingRequest _request
+        - IGenericRepository<Train> _repository
+
+        + ConsoleVendingUI(IGenericRepository<Train> repository)
+        + void PrintMainMenu()
+        + void PrintRequestMenu()
+        + void PrintPickUpTicketMenu()
+        + void PrintAvailableTrains()
+        + void PrintPaymentMenu()
+        + void PrintProcessing()
+        + void PrintReceiptView()
+        + VendingRequest BuildRequest()
+        - List<Train> getAvailableTrain()
+    }
+
+    HSRTicketVendorSystem.Repository.IGenericRepository <-- ConsoleVendingUI
+
+    class VendingService {
+        - IPaymentService _paymentService
+        - IVendingUI _vendingUI
+
+        + VendingService(IPaymentService paymentService, IVendingUI vendingUI)
+        + void Serve()
+    }
+    IPaymentService <-- VendingService
+    IVendingUI <-- VendingService
+
+    class PurchaseTrainTicketFactory {
+        + TrainTicket GenerateTicket(VendingRepuest request)
+    }
+
+    class PickUpTrainTicketFactory {
+        + TrainTicket GenerateTicket(VendingRepuest request)
+    }
+
+    class CreditCardPaymentService {
+        - IPaymentAPI _paymentAPI
+
+        + CreditCardPaymentService(IPaymentAPI paymentAPI)
+        + PaymentResponse Pay(Payment payment)
+        - BankAPIResponse verifyCreditCard(String paymentToken)
+    }
+    IPaymentAPI <-- CreditCardPaymentService
+
+    class CashPaymentService {
+        - IPaymentAPI _paymentAPI
+
+        + CashPaymentService(IPaymentAPI paymentAPI)
+        + PaymentResponse Pay(Payment payment)
+        - CasherAPIResponse verifyCash(String paymentToken)
+    }
+    IPaymentAPI <-- CashPaymentService
+
+    IVendingUI <|- ConsoleVendingUI
+    IVendingService <|- VendingService
+    ITrainTicketFactory <|- PurchaseTrainTicketFactory
+    ITrainTicketFactory <|- PickUpTrainTicketFactory
+    IPaymentService <|- CreditCardPaymentService
+    IPaymentService <|- CashPaymentService
+}
+
+namespace HSRTicketVendorSystem.App {
+    class Program {
+        - IVendingService _vendingService
+
+        + static void Main(String[] args)
+    }
+
+    HSRTicketVendorSystem.Service.IVendingService <-- Program
+}
+
+@enduml
