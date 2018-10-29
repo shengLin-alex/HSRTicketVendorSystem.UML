@@ -1,5 +1,15 @@
 @startuml HSRTicketVendorSystem
 
+namespace HSRTicketVendorSystem.App {
+    class Program {
+        - IVendingService _vendingService
+
+        + static void Main(String[] args)
+    }
+
+    HSRTicketVendorSystem.Service.IVendingService <-- Program
+}
+
 namespace HSRTicketVendorSystem.Model {
 
     enum TrainStationEnum {
@@ -215,14 +225,7 @@ namespace HSRTicketVendorSystem.Service {
     IPaymentService <|- CashPaymentService
 }
 
-namespace HSRTicketVendorSystem.App {
-    class Program {
-        - IVendingService _vendingService
-
-        + static void Main(String[] args)
-    }
-
-    HSRTicketVendorSystem.Service.IVendingService <-- Program
-}
+HSRTicketVendorSystem.Service -[hidden]down- HSRTicketVendorSystem.Service.Dto
+HSRTicketVendorSystem.Model -[hidden]up- HSRTicketVendorSystem.Repository
 
 @enduml
