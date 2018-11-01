@@ -7,7 +7,7 @@ namespace HSRTicketVendorSystem.App {
         + static void Main(string[] args)
     }
 
-    HSRTicketVendorSystem.Service.IVendingService <-- Program
+    HSRTicketVendorSystem.Service.IVendingService <.. Program
 }
 
 namespace HSRTicketVendorSystem.Model {
@@ -80,6 +80,9 @@ namespace HSRTicketVendorSystem.Model {
         + List<TrainNode> Route { get; set; }
         + List<TrainSeatReservation> { get; set; }
     }
+
+    Train "1" *-- "1..*" TrainNode
+    Train "1" *-- "1..*" TrainSeatReservation
 }
 
 namespace HSRTicketVendorSystem.Repository {
@@ -165,6 +168,7 @@ namespace HSRTicketVendorSystem.Service {
     class ConsoleVendingUI {
         - VendingRequest _request
         - IGenericRepository<Train> _repository
+        - ITrainTicketFactory _ticketFactory
 
         + ConsoleVendingUI(IGenericRepository<Train> repository)
         + void PrintMainMenu()
@@ -178,8 +182,8 @@ namespace HSRTicketVendorSystem.Service {
         - List<Train> getAvailableTrain()
     }
 
-    HSRTicketVendorSystem.Repository.IGenericRepository <-down- ConsoleVendingUI
-    ITrainTicketFactory <-up- ConsoleVendingUI
+    HSRTicketVendorSystem.Repository.IGenericRepository <.down. ConsoleVendingUI
+    ITrainTicketFactory <.up. ConsoleVendingUI
 
     class VendingService {
         - IPaymentService _paymentService
@@ -188,8 +192,8 @@ namespace HSRTicketVendorSystem.Service {
         + VendingService(IPaymentService paymentService, IVendingUI vendingUI)
         + void Serve()
     }
-    IPaymentService <-- VendingService
-    IVendingUI <-- VendingService
+    IPaymentService <.. VendingService
+    IVendingUI <.. VendingService
 
     class PurchaseTrainTicketFactory {
         + TrainTicket GenerateTicket(VendingRepuest request)
@@ -206,7 +210,7 @@ namespace HSRTicketVendorSystem.Service {
         + PaymentResponse Pay(Payment payment)
         - BankAPIResponse verifyCreditCard(string paymentToken)
     }
-    IPaymentAPI <-- CreditCardPaymentService
+    IPaymentAPI <.. CreditCardPaymentService
 
     class CashPaymentService {
         - IPaymentAPI _paymentAPI
@@ -215,7 +219,7 @@ namespace HSRTicketVendorSystem.Service {
         + PaymentResponse Pay(Payment payment)
         - CasherAPIResponse verifyCash(string paymentToken)
     }
-    IPaymentAPI <-- CashPaymentService
+    IPaymentAPI <.. CashPaymentService
 
     IVendingUI <|- ConsoleVendingUI
     IVendingService <|- VendingService
