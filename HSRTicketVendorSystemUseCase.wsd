@@ -1,0 +1,7 @@
+@startuml HSRTicketVendorSystemUseCase
+
+left to right direction
+:User: --> (Buy ticket)
+:User: --> (Pick up ticket)
+
+@enduml
