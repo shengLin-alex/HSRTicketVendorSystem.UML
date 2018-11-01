@@ -4,7 +4,7 @@ namespace HSRTicketVendorSystem.App {
     class Program {
         - IVendingService _vendingService
 
-        + static void Main(String[] args)
+        + static void Main(string[] args)
     }
 
     HSRTicketVendorSystem.Service.IVendingService <-- Program
@@ -49,14 +49,14 @@ namespace HSRTicketVendorSystem.Model {
 
     class Payment {
         + PaymentTypeEnum PaymentTypeEnum { get; set; }
-        + String PaymentToken { get; set; }
+        + string PaymentToken { get; set; }
     }
 
     class TrainTicket {
-        + String TicketId { get; set; }
+        + string TicketId { get; set; }
         + TrainStationEnum StartPoint { get; set; }
         + TrainStationEnum Destination { get; set; }
-        + String TrainNumber { get; set; }
+        + string TrainNumber { get; set; }
         + PaymentTypeEnum PaymentType { get; set; }
         + TicketTypeEnum TicketType { get; set; }
         + ReservationTypeEnum ReservationType { get; set; }
@@ -65,7 +65,7 @@ namespace HSRTicketVendorSystem.Model {
     }
 
     class TrainSeatReservation {
-        + String SetId { get; set; }
+        + string SetId { get; set; }
         + bool IsServed { get; set; }
     }
 
@@ -76,7 +76,7 @@ namespace HSRTicketVendorSystem.Model {
     }
 
     class Train {
-        + String TrainNumber { get; set; }
+        + string TrainNumber { get; set; }
         + List<TrainNode> Route { get; set; }
         + List<TrainSeatReservation> { get; set; }
     }
@@ -118,9 +118,8 @@ namespace HSRTicketVendorSystem.Service.Dto {
     }
 
     class PaymentAPIResponse {
-        + String Message { get; set; }
+        + string Message { get; set; }
         + int Code { get; set; }
-        + int Change { get; set; }
     }
 }
 
@@ -149,15 +148,15 @@ namespace HSRTicketVendorSystem.Service {
     }
 
     interface IPaymentAPI {
-        + PaymentAPIResponse verify(String paymentToken)
+        + PaymentAPIResponse verify(string paymentToken)
     }
 
     class CreditCardPaymentAPI {
-        + PaymentAPIResponse verify(String paymentToken)
+        + PaymentAPIResponse verify(string paymentToken)
     }
 
     class CasherPaymentAPI {
-        + PaymentAPIResponse verify(String paymentToken)
+        + PaymentAPIResponse verify(string paymentToken)
     }
 
     IPaymentAPI <|-up- CreditCardPaymentAPI
@@ -205,7 +204,7 @@ namespace HSRTicketVendorSystem.Service {
 
         + CreditCardPaymentService(IPaymentAPI paymentAPI)
         + PaymentResponse Pay(Payment payment)
-        - BankAPIResponse verifyCreditCard(String paymentToken)
+        - BankAPIResponse verifyCreditCard(string paymentToken)
     }
     IPaymentAPI <-- CreditCardPaymentService
 
@@ -214,7 +213,7 @@ namespace HSRTicketVendorSystem.Service {
 
         + CashPaymentService(IPaymentAPI paymentAPI)
         + PaymentResponse Pay(Payment payment)
-        - CasherAPIResponse verifyCash(String paymentToken)
+        - CasherAPIResponse verifyCash(string paymentToken)
     }
     IPaymentAPI <-- CashPaymentService
 
