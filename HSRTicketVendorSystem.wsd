@@ -1,6 +1,6 @@
 @startuml HSRTicketVendorSystem
 
-namespace HSRTicketVendorSystem.App {
+namespace HSRTicketVendorSystem {
     class Program {
         - IVendingService _vendingService
 
@@ -103,29 +103,6 @@ namespace HSRTicketVendorSystem.Repository {
     IGenericRepository <|- TrainRepository
 }
 
-namespace HSRTicketVendorSystem.Service.Dto {
-    class VendingRepuest {
-        + VendingTypeEnum VendingType { get; set; }
-        + TrainStationEnum StartPoint { get; set; }
-        + TrainStationEnum Destination { get; set; }
-        + PaymentTypeEnum PaymentType { get; set; }
-        + TicketTypeEnum TicketType { get; set; }
-        + ReservationTypeEnum ReservationType { get; set; }
-        + DateTime ArrivalTime { get; set; }
-        + DateTime DepartureTime { get; set; }
-    }
-
-    class PaymentResponse {
-        + bool IsSuccess { get; set; }
-        + PaymentAPIResponse APIResponse { get; set; }
-    }
-
-    class PaymentAPIResponse {
-        + string Message { get; set; }
-        + int Code { get; set; }
-    }
-}
-
 namespace HSRTicketVendorSystem.Service {
     interface IVendingUI {
         + void PrintMainMenu()
@@ -135,14 +112,13 @@ namespace HSRTicketVendorSystem.Service {
         + void PrintPaymentMenu()
         + void PrintProcessing()
         + void PrintReceiptView()
-        + VendingRequest BuildRequest()
     }
 
     interface IVendingService {
         + void Serve()
     }
 
-    interface ITrainTicketFactory {
+    interface ITrainTicketBuilder {
         + TrainTicket GenerateTicket(VendingRepuest request)
     }
 
@@ -168,7 +144,6 @@ namespace HSRTicketVendorSystem.Service {
     class ConsoleVendingUI {
         - VendingRequest _request
         - IGenericRepository<Train> _repository
-        - ITrainTicketFactory _ticketFactory
 
         + ConsoleVendingUI(IGenericRepository<Train> repository)
         + void PrintMainMenu()
@@ -178,30 +153,41 @@ namespace HSRTicketVendorSystem.Service {
         + void PrintPaymentMenu()
         + void PrintProcessing()
         + void PrintReceiptView()
-        + VendingRequest BuildRequest()
         - List<Train> getAvailableTrain()
     }
 
     HSRTicketVendorSystem.Repository.IGenericRepository <.down. ConsoleVendingUI
-    ITrainTicketFactory <.up. ConsoleVendingUI
 
     class VendingService {
         - IPaymentService _paymentService
         - IVendingUI _vendingUI
+        - ITrainTicketBuilder _ticketBuilder
 
         + VendingService(IPaymentService paymentService, IVendingUI vendingUI)
         + void Serve()
+        - VendingRequest BuildRequest()
     }
+
+    ITrainTicketBuilder <.up. VendingService
     IPaymentService <.. VendingService
     IVendingUI <.. VendingService
 
-    class PurchaseTrainTicketFactory {
+    class PurchaseTrainTicketBuilder {
+        - IGenericRepository<Train> _repository
+
+        + PurchaseTrainTicketBuilder(IGenericRepository<Train> repository)
         + TrainTicket GenerateTicket(VendingRepuest request)
     }
 
-    class PickUpTrainTicketFactory {
+    class PickUpTrainTicketBuilder {
+        - IGenericRepository<Train> _repository
+
+        + PickUpTrainTicketBuilder(IGenericRepository<Train> repository)
         + TrainTicket GenerateTicket(VendingRepuest request)
+        - Train getPreorderTrainInfo(string pickUpCode, string pickUpVerifyCode)
     }
+
+    HSRTicketVendorSystem.Repository.IGenericRepository <.right. PickUpTrainTicketBuilder
 
     class CreditCardPaymentService {
         - IPaymentAPI _paymentAPI
@@ -223,10 +209,35 @@ namespace HSRTicketVendorSystem.Service {
 
     IVendingUI <|- ConsoleVendingUI
     IVendingService <|- VendingService
-    ITrainTicketFactory <|-up- PurchaseTrainTicketFactory
-    ITrainTicketFactory <|-up- PickUpTrainTicketFactory
-    IPaymentService <|- CreditCardPaymentService
-    IPaymentService <|- CashPaymentService
+    ITrainTicketBuilder <|-up- PurchaseTrainTicketBuilder
+    ITrainTicketBuilder <|-up- PickUpTrainTicketBuilder
+    IPaymentService <|-left- CreditCardPaymentService
+    IPaymentService <|-left- CashPaymentService
+}
+
+namespace HSRTicketVendorSystem.Service.Dto {
+    class VendingRepuest {
+        + VendingTypeEnum VendingType { get; set; }
+        + TrainStationEnum StartPoint { get; set; }
+        + TrainStationEnum Destination { get; set; }
+        + PaymentTypeEnum PaymentType { get; set; }
+        + TicketTypeEnum TicketType { get; set; }
+        + ReservationTypeEnum ReservationType { get; set; }
+        + DateTime ArrivalTime { get; set; }
+        + DateTime DepartureTime { get; set; }
+        + string PickUpCode { get; set; }
+        + string PickUpVerifyCode { get; set; }
+    }
+
+    class PaymentResponse {
+        + bool IsSuccess { get; set; }
+        + PaymentAPIResponse APIResponse { get; set; }
+    }
+
+    class PaymentAPIResponse {
+        + string Message { get; set; }
+        + int Code { get; set; }
+    }
 }
 
 HSRTicketVendorSystem.Service -[hidden]down- HSRTicketVendorSystem.Service.Dto

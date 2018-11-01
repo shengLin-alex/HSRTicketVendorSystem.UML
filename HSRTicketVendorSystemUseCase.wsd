@@ -1,7 +1,16 @@
 @startuml HSRTicketVendorSystemUseCase
 
 left to right direction
-:User: --> (Buy ticket)
-:User: --> (Pick up ticket)
+
+usecase BuyTicket as "Buy Ticket
+--
+現場購買實體車票"
+
+usecase PickUpTicket as "Pick Up Ticket
+--
+使用訂票代碼取票"
+
+:User: --> BuyTicket
+:User: --> PickUpTicket
 
 @enduml
